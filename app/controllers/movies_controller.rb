@@ -11,7 +11,10 @@ class MoviesController < ApplicationController
   end
 
   def index
+    @all_ratings = ['G', 'PG', 'PG-13', 'R']
+
     @movies = Movie.all
+
     if params.key?(:sort_by)
       case params[:sort_by]
       when "title"
@@ -19,6 +22,11 @@ class MoviesController < ApplicationController
       when "release_date"
         @movies = Movie.order(:release_date)
       end
+    end
+
+    if params.key?(:ratings) && params[:ratings].is_a?(Hash)
+      rsel = params[:ratings].keys().select { |k| params[:ratings][k] == "1" }
+      @movies = Movie.where({rating: rsel})
     end
   end
 
