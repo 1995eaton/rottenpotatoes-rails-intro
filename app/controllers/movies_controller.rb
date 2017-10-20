@@ -13,21 +13,45 @@ class MoviesController < ApplicationController
   def index
     @all_ratings = ['G', 'PG', 'PG-13', 'R']
 
-    @movies = Movie.all
+    sort = params[:sort] || session[:sort]
+    ratings = params[:ratings] || session[:ratings] || {}
 
-    if params.key?(:sort_by)
-      case params[:sort_by]
-      when "title"
-        @movies = Movie.order(:title)
-      when "release_date"
-        @movies = Movie.order(:release_date)
-      end
+    # if ratings == {}
+    #   ratings = Hash[@all_ratings.map { |rating| [rating, "1"] }]
+    # end
+
+    @ratings = ratings
+
+    @movies = case sort
+    when "title"
+      Movie.order(sort)
+    when "release_date"
+      Movie.order(sort)
+    else
+      Movie.all
     end
 
-    if params.key?(:ratings) && params[:ratings].is_a?(Hash)
-      rsel = params[:ratings].keys().select { |k| params[:ratings][k] == "1" }
-      @movies = Movie.where({rating: rsel})
+    if params[:ratings] != session[:ratings]
+      session[:sort] = sort
+      session[:ratings] = ratings
+      flash.keep
+      redirect_to :sort => sort, :ratings => ratings
+      return
     end
+
+    if !params.key?(:sort) and params[:sort] != session[:sort]
+      session[:sort] = sort
+      flash.keep
+      redirect_to :sort => sort, :ratings => ratings
+      return
+    end
+
+    if ratings
+      rsel = ratings.keys().select { |k| ratings[k] == "1" }
+      session[:ratings] = ratings
+      @movies = @movies.where({rating: rsel})
+    end
+
   end
 
   def new
