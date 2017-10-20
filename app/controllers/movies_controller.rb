@@ -16,9 +16,9 @@ class MoviesController < ApplicationController
     sort = params[:sort] || session[:sort]
     ratings = params[:ratings] || session[:ratings] || {}
 
-    # if ratings == {}
-    #   ratings = Hash[@all_ratings.map { |rating| [rating, "1"] }]
-    # end
+    if ratings == {}
+      ratings = Hash[@all_ratings.map { |rating| [rating, "1"] }]
+    end
 
     @ratings = ratings
 
@@ -52,6 +52,10 @@ class MoviesController < ApplicationController
       @movies = @movies.where({rating: rsel})
     end
 
+  end
+
+  def reset_session
+    session.clear
   end
 
   def new
